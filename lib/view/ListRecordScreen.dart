@@ -63,10 +63,6 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
     var provider = Provider.of<ToiletProvider>(context);
     var records = provider.records.where(_applyFilters).toList();
 
-    if (provider.records.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
     return Scaffold(
       appBar: AppBar(title: const Text('Kayıtlar')),
       body: Column(
@@ -75,13 +71,21 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
           _buildFilters(),
           // Kayıtların listesi.
           Expanded(
-            child: ListView.builder(
-              itemCount: records.length,
-              itemBuilder: (context, index) {
-                var rec = records[index];
-                return RecordListItem(record: rec);
-              },
-            ),
+            child:
+                records.isEmpty
+                    ? const Center(
+                      child: Text(
+                        'Kayıt bulunmamaktadır.',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                    )
+                    : ListView.builder(
+                      itemCount: records.length,
+                      itemBuilder: (context, index) {
+                        var rec = records[index];
+                        return RecordListItem(record: rec);
+                      },
+                    ),
           ),
         ],
       ),

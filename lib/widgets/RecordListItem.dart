@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_wc_app/models/ToiletRecordModel.dart';
+import 'package:flutter_wc_app/view/AddRecordScreen.dart';
+import 'package:flutter_wc_app/providers/ToiletProvider.dart';
+import 'package:provider/provider.dart';
 
 /// Kayıt detaylarını gösteren şık dialog.
 void showRecordDetailDialog(BuildContext context, ToiletRecord record) {
@@ -51,15 +54,72 @@ void showRecordDetailDialog(BuildContext context, ToiletRecord record) {
                   record.diskMiktariBez,
                 ),
                 _detailRow(Icons.texture, 'Kıvam', record.kivam),
-                // Fotoğraf alanı devre dışı
               ],
             ),
           ),
           actions: [
             TextButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                // Güncelleme ekranına yönlendir
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (_) => AddRecordScreen(
+                          // Eğer AddRecordScreen güncelleme destekliyorsa, ilgili kaydı parametre olarak gönderin
+                          // ör: record: record
+                        ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.edit, color: Colors.orange),
+              label: const Text('Düzenle'),
+            ),
+            TextButton.icon(
+              onPressed: () async {
+                Navigator.pop(context);
+                // Silme işlemi için onay al
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder:
+                      (_) => AlertDialog(
+                        title: const Text('Silme Onayı'),
+                        content: const Text('Bu kayıt silinsin mi?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('İptal'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text(
+                              'Sil',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                );
+                if (confirm == true) {
+                  // Silme işlemi
+                  final provider = Provider.of<ToiletProvider>(
+                    context,
+                    listen: false,
+                  );
+                  await provider.deleteRecord(record.id!);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Kayıt silindi')),
+                  );
+                }
+              },
+              icon: const Icon(Icons.delete, color: Colors.red),
+              label: const Text('Sil'),
+            ),
+            TextButton.icon(
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.close),
-              label: const Text('Kapat'),
+              label: const Text('Tamam'),
             ),
           ],
         ),
