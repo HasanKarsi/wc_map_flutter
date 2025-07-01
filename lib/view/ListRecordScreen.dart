@@ -172,7 +172,10 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
                           firstDate: DateTime(2020),
                           lastDate: DateTime.now(),
                         );
-                        if (picked != null) setState(() => _startDate = picked);
+                        if (picked != null)
+                          setState(
+                            () => _startDate = picked,
+                          ); // setState ile güncelle
                       },
                       child: Text(
                         'Başlangıç: ${_startDate!.day}.${_startDate!.month}.${_startDate!.year}',
@@ -188,7 +191,10 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
                           firstDate: DateTime(2020),
                           lastDate: DateTime.now(),
                         );
-                        if (picked != null) setState(() => _endDate = picked);
+                        if (picked != null)
+                          setState(
+                            () => _endDate = picked,
+                          ); // setState ile güncelle
                       },
                       child: Text(
                         'Bitiş: ${_endDate!.day}.${_endDate!.month}.${_endDate!.year}',
@@ -220,6 +226,8 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
     );
   }
 
+  DateTime _onlyDate(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
+
   /// Kayıtları filtreleyen fonksiyon.
   bool _applyFilters(ToiletRecord rec) {
     // Şifre girilmediyse sadece kendi kullanıcı adını göster
@@ -238,8 +246,12 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
 
     var oturmaTarihi = _parseDate(rec.oturmaSaati);
     if (oturmaTarihi == null) return false;
-    if (_startDate != null && oturmaTarihi.isBefore(_startDate!)) return false;
-    if (_endDate != null && oturmaTarihi.isAfter(_endDate!)) return false;
+    if (_startDate != null &&
+        _onlyDate(oturmaTarihi).isBefore(_onlyDate(_startDate!)))
+      return false;
+    if (_endDate != null &&
+        _onlyDate(oturmaTarihi).isAfter(_onlyDate(_endDate!)))
+      return false;
 
     return true;
   }
@@ -248,8 +260,10 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
   DateTime? _parseDate(String str) {
     try {
       var parts = str.split(' ');
+      if (parts.length < 2) return null;
       var date = parts[0].split('.');
       var time = parts[1].split(':');
+      if (date.length < 3 || time.length < 2) return null;
       return DateTime(
         int.parse(date[2]),
         int.parse(date[1]),
@@ -340,7 +354,7 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
               ),
               TextButton(
                 onPressed: () {
-                  if (password == '1234') {
+                  if (password == '859021') {
                     // Şifrenizi buradan değiştirebilirsiniz
                     setState(() {
                       _showAll = true;

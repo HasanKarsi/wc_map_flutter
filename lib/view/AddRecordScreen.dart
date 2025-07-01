@@ -196,7 +196,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
             ElevatedButton.icon(
               onPressed: () async {
                 final picked = await _picker.pickImage(
-                  source: ImageSource.gallery,
+                  source: ImageSource.camera,
                 );
                 if (picked != null) {
                   setState(() {
