@@ -4,8 +4,8 @@ import 'package:flutter_wc_app/models/ToiletRecordModel.dart';
 import 'package:flutter_wc_app/providers/ToiletProvider.dart';
 import 'package:flutter_wc_app/providers/UserProvider.dart';
 import 'package:flutter_wc_app/view/HomeScreen.dart';
-// import 'package:flutter_wc_app/services/StorageServices.dart'; // Fotoğraf işlemleri devre dışı
-//import 'package:image_picker/image_picker.dart';
+import 'package:flutter_wc_app/services/StorageServices.dart'; // Fotoğraf işlemleri aktif
+import 'package:image_picker/image_picker.dart'; // Fotoğraf işlemleri aktif
 import 'package:provider/provider.dart';
 
 /// AddRecordScreen, yeni bir tuvalet kaydı eklemek için kullanılan ekran.
@@ -32,8 +32,8 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
   String? _kivam;
 
   // Seçilen fotoğraf dosyası.
-  // File? _pickedImage;
-  // final ImagePicker _picker = ImagePicker();
+  File? _pickedImage;
+  final ImagePicker _picker = ImagePicker();
 
   // Sabit seçenek listeleri.
   final List<String> sebepList = [
@@ -192,8 +192,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
               value: _kivam,
             ),
             const SizedBox(height: 16),
-            // Fotoğraf ekleme butonu ve önizlemesi DEVRE DIŞI!
-            /*
+            // Fotoğraf ekleme butonu ve önizlemesi AKTİF!
             ElevatedButton.icon(
               onPressed: () async {
                 final picked = await _picker.pickImage(
@@ -209,7 +208,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
               label: const Text('Fotoğraf Ekle'),
             ),
             if (_pickedImage != null) Image.file(_pickedImage!, height: 100),
-            */
+
             const SizedBox(height: 24),
             // Kaydet butonu, doğrulama ve kayıt işlemi.
             ElevatedButton(
@@ -217,14 +216,14 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                 if (_gitmeSebebi == null ||
                     _diskMiktariTuvalet == null ||
                     _diskMiktariBez == null ||
-                    _kivam == null
-                // || _pickedImage == null
-                ) {
+                    _kivam == null ||
+                    _pickedImage ==
+                        null // Fotoğraf zorunlu
+                        ) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                        // "Tüm alanları doldurun ve fotoğraf ekleyin.",
-                        "Tüm alanları doldurun.",
+                        "Tüm alanları doldurun ve fotoğraf ekleyin.",
                       ),
                     ),
                   );
@@ -233,11 +232,10 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
 
                 // Fotoğrafı yükle ve kayıt oluştur.
                 String fileName = _formatDateTime(_oturmaSaati);
-                // String fotoUrl = await StorageService().uploadPhoto(
-                //   _pickedImage!,
-                //   "$fileName.jpg",
-                // );
-                String fotoUrl = ''; // Fotoğraf işlemleri devre dışı
+                String fotoUrl = await StorageService().uploadPhoto(
+                  _pickedImage!,
+                  "$fileName.jpg",
+                );
 
                 ToiletRecord record = ToiletRecord(
                   kullanici: userProvider.kullaniciAdi ?? '',
@@ -248,7 +246,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                   diskMiktariTuvalet: _diskMiktariTuvalet!,
                   diskMiktariBez: _diskMiktariBez!,
                   kivam: _kivam!,
-                  // fotoUrl: fotoUrl, // Fotoğraf işlemleri devre dışı
+                  fotoUrl: fotoUrl, // Fotoğraf işlemleri aktif
                 );
 
                 await toiletProvider.addRecord(record);

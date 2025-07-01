@@ -54,6 +54,32 @@ void showRecordDetailDialog(BuildContext context, ToiletRecord record) {
                   record.diskMiktariBez,
                 ),
                 _detailRow(Icons.texture, 'Kıvam', record.kivam),
+                const SizedBox(height: 16),
+                // Fotoğraf önizlemesi
+                if (record.fotoUrl != null && record.fotoUrl.isNotEmpty)
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        record.fotoUrl,
+                        height: 120,
+                        fit: BoxFit.cover,
+                        errorBuilder:
+                            (context, error, stackTrace) => const Icon(
+                              Icons.broken_image,
+                              size: 60,
+                              color: Colors.grey,
+                            ),
+                      ),
+                    ),
+                  )
+                else
+                  const Center(
+                    child: Text(
+                      'Fotoğraf yok',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
               ],
             ),
           ),

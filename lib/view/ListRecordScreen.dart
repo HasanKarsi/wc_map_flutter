@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_wc_app/models/ToiletRecordModel.dart';
 import 'package:flutter_wc_app/providers/ToiletProvider.dart';
+import 'package:flutter_wc_app/providers/UserProvider.dart';
 import 'package:flutter_wc_app/view/AddRecordScreen.dart';
 import 'package:provider/provider.dart';
 
@@ -44,6 +45,8 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
     'Sulu (İshal)',
   ];
 
+  bool _showAll = false; // Şifre ile tüm kayıtları gösterme durumu
+
   @override
   void initState() {
     super.initState();
@@ -51,8 +54,13 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
     var now = DateTime.now();
     _startDate = now.subtract(const Duration(days: 180));
     _endDate = now;
-    // Kayıtları yükle.
+    // Kullanıcı adını ayarla (örnek: UserProvider'dan alınıyor)
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Kullanıcı adını Provider'dan al
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      setState(() {
+        _kullaniciFilter = userProvider.kullaniciAdi;
+      });
       Provider.of<ToiletProvider>(context, listen: false).fetchRecords();
     });
   }
@@ -64,7 +72,16 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
     var records = provider.records.where(_applyFilters).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Kayıtlar')),
+      appBar: AppBar(
+        title: const Text('Kayıtlar'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.lock_open),
+            tooltip: 'Tüm Kayıtları Göster',
+            onPressed: _showPasswordDialog,
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // Filtreleme paneli.
@@ -193,6 +210,11 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
 
   /// Kayıtları filtreleyen fonksiyon.
   bool _applyFilters(ToiletRecord rec) {
+    // Şifre girilmediyse sadece kendi kullanıcı adını göster
+    if (!_showAll &&
+        _kullaniciFilter != null &&
+        rec.kullanici != _kullaniciFilter)
+      return false;
     if (_konumFilter != 'Tümü' && rec.konum != _konumFilter) return false;
     if (_sebepFilter != 'Tümü' && rec.gitmeSebebi != _sebepFilter) return false;
     if (_diskTuvaletFilter != 'Tümü' &&
@@ -241,8 +263,8 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
       );
       // Güncelleme ekranı detaylı şekilde ayrı bir ekranla yapılabilir.
     }
-    // Fotoğraf işlemleri devre dışı bırakıldı!
-    /*
+    // Fotoğraf işlemleri AKTIF!
+    
     else if (action == 'photo') {
       showDialog(
         context: context,
@@ -259,7 +281,7 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
             ),
       );
     }
-    */
+    
   }
 
   /// Silme işlemi için onay dialog'u.
@@ -281,6 +303,46 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
                   await provider.deleteRecord(rec.id!);
                 },
                 child: const Text('Sil'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  /// Şifre dialogunu gösterir ve doğruysa tüm kayıtları açar.
+  void _showPasswordDialog() async {
+    String password = '';
+    await showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Şifre Gerekli'),
+            content: TextField(
+              autofocus: true,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Şifre'),
+              onChanged: (val) => password = val,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('İptal'),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (password == '1234') {
+                    // Şifrenizi buradan değiştirebilirsiniz
+                    setState(() {
+                      _showAll = true;
+                    });
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Hatalı şifre!')),
+                    );
+                  }
+                },
+                child: const Text('Tamam'),
               ),
             ],
           ),

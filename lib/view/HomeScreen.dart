@@ -46,7 +46,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const AddRecordScreen()),
+                  MaterialPageRoute(builder: (_) => AddRecordScreen()),
                 );
               },
               child: const Text('Yeni Tuvalet Kaydı Ekle'),

@@ -8,7 +8,7 @@ class ToiletRecord {
   String diskMiktariTuvalet;
   String diskMiktariBez;
   String kivam;
-  // String fotoUrl; // Fotoğraf alanı devre dışı
+  String fotoUrl; // Fotoğraf alanı devre dışı
 
   ToiletRecord({
     this.id,
@@ -20,7 +20,7 @@ class ToiletRecord {
     required this.diskMiktariTuvalet,
     required this.diskMiktariBez,
     required this.kivam,
-    // required this.fotoUrl, // Fotoğraf alanı devre dışı
+    required this.fotoUrl, // Fotoğraf alanı devre dışı
   });
 
   Map<String, dynamic> toMap() {
@@ -33,7 +33,7 @@ class ToiletRecord {
       'diskMiktariTuvalet': diskMiktariTuvalet,
       'diskMiktariBez': diskMiktariBez,
       'kivam': kivam,
-      // 'fotoUrl': fotoUrl, // Fotoğraf alanı devre dışı
+      'fotoUrl': fotoUrl, // Fotoğraf alanı devre dışı
     };
   }
 
@@ -48,7 +48,7 @@ class ToiletRecord {
       diskMiktariTuvalet: map['diskMiktariTuvalet'] ?? '',
       diskMiktariBez: map['diskMiktariBez'] ?? '',
       kivam: map['kivam'] ?? '',
-      // fotoUrl: map['fotoUrl'] ?? '', // Fotoğraf alanı devre dışı
+      fotoUrl: map['fotoUrl'] ?? '', // Fotoğraf alanı devre dışı
     );
   }
 }
