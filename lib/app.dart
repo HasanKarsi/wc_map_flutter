@@ -5,7 +5,6 @@ import 'package:flutter_wc_app/view/HomeScreen.dart';
 import 'package:flutter_wc_app/view/OnboardingScreen.dart';
 import 'package:provider/provider.dart';
 
-
 class TuvaletTakipApp extends StatelessWidget {
   const TuvaletTakipApp({super.key});
 
@@ -22,12 +21,13 @@ class TuvaletTakipApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Tuvalet Takip',
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
               useMaterial3: true,
             ),
-            home: userProvider.kullaniciAdi == null
-                ? const OnboardingScreen()
-                : const HomeScreen(),
+            home:
+                userProvider.kullaniciAdi == null
+                    ? const OnboardingScreen()
+                    : const HomeScreen(),
           );
         },
       ),

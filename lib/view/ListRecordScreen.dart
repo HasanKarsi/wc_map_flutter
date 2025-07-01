@@ -77,7 +77,26 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kayıtlar'),
+        title: Row(
+          children: [
+            Icon(Icons.list_alt, color: Colors.white, size: 28),
+            const SizedBox(width: 10),
+            const Text(
+              'Kayıtlar',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.blue[700],
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+        ),
+        elevation: 4,
         actions: [
           IconButton(
             icon: const Icon(Icons.lock_open),
@@ -94,29 +113,69 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
             ),
         ],
       ),
-      body: Column(
-        children: [
-          // Filtreleme paneli.
-          _buildFilters(),
-          // Kayıtların listesi.
-          Expanded(
-            child:
-                records.isEmpty
-                    ? const Center(
-                      child: Text(
-                        'Kayıt bulunmamaktadır.',
-                        style: TextStyle(fontSize: 18, color: Colors.grey),
-                      ),
-                    )
-                    : ListView.builder(
-                      itemCount: records.length,
-                      itemBuilder: (context, index) {
-                        var rec = records[index];
-                        return RecordListItem(record: rec);
-                      },
-                    ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.blue[700],
+        icon: const Icon(Icons.add),
+        label: const Text("Yeni Kayıt"),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddRecordScreen()),
+          );
+        },
+      ),
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFE3F2FD), Color(0xFF90CAF9)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-        ],
+        ),
+        child: Column(
+          children: [
+            // Filtreleme paneli.
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: _buildFilters(),
+              ),
+            ),
+            // Kayıtların listesi.
+            Expanded(
+              child:
+                  records.isEmpty
+                      ? const Center(
+                        child: Text(
+                          'Kayıt bulunmamaktadır.',
+                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                        ),
+                      )
+                      : ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
+                        itemCount: records.length,
+                        itemBuilder: (context, index) {
+                          var rec = records[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: RecordListItem(record: rec),
+                          );
+                        },
+                      ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -124,47 +183,79 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
   /// Filtreleme panelini oluşturan widget.
   Widget _buildFilters() {
     return ExpansionTile(
-      title: const Text('Filtrele'),
+      title: const Text(
+        'Filtrele',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              _buildDropdown(
-                'Konum',
-                konumlar,
-                _konumFilter,
-                (val) => setState(() => _konumFilter = val),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDropdown(
+                      'Konum',
+                      konumlar,
+                      _konumFilter,
+                      (val) => setState(() => _konumFilter = val),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Sebep dropdown'u için Expanded yerine sabit genişlik kullan
+                  SizedBox(
+                    width: 250, // Genişliği artırarak taşmayı önle
+                    child: _buildDropdown(
+                      'Sebep',
+                      sebepler,
+                      _sebepFilter,
+                      (val) => setState(() => _sebepFilter = val),
+                    ),
+                  ),
+                ],
               ),
-              _buildDropdown(
-                'Sebep',
-                sebepler,
-                _sebepFilter,
-                (val) => setState(() => _sebepFilter = val),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDropdown(
+                      'Tuvalet Dışkı',
+                      miktarlar,
+                      _diskTuvaletFilter,
+                      (val) => setState(() => _diskTuvaletFilter = val),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildDropdown(
+                      'Bez Dışkı',
+                      miktarlar,
+                      _diskBezFilter,
+                      (val) => setState(() => _diskBezFilter = val),
+                    ),
+                  ),
+                ],
               ),
-              _buildDropdown(
-                'Tuvalet Dışkı',
-                miktarlar,
-                _diskTuvaletFilter,
-                (val) => setState(() => _diskTuvaletFilter = val),
-              ),
-              _buildDropdown(
-                'Bez Dışkı',
-                miktarlar,
-                _diskBezFilter,
-                (val) => setState(() => _diskBezFilter = val),
-              ),
+              const SizedBox(height: 8),
               _buildDropdown(
                 'Kıvam',
                 kivamlar,
                 _kivamFilter,
                 (val) => setState(() => _kivamFilter = val),
               ),
-              // Tarih aralığı seçimi.
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
-                    child: TextButton(
+                    child: TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.blue[700],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.date_range),
                       onPressed: () async {
                         var picked = await showDatePicker(
                           context: context,
@@ -172,18 +263,24 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
                           firstDate: DateTime(2020),
                           lastDate: DateTime.now(),
                         );
-                        if (picked != null)
-                          setState(
-                            () => _startDate = picked,
-                          ); // setState ile güncelle
+                        if (picked != null) setState(() => _startDate = picked);
                       },
-                      child: Text(
+                      label: Text(
                         'Başlangıç: ${_startDate!.day}.${_startDate!.month}.${_startDate!.year}',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: TextButton(
+                    child: TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.blue[700],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.date_range),
                       onPressed: () async {
                         var picked = await showDatePicker(
                           context: context,
@@ -191,13 +288,11 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
                           firstDate: DateTime(2020),
                           lastDate: DateTime.now(),
                         );
-                        if (picked != null)
-                          setState(
-                            () => _endDate = picked,
-                          ); // setState ile güncelle
+                        if (picked != null) setState(() => _endDate = picked);
                       },
-                      child: Text(
+                      label: Text(
                         'Bitiş: ${_endDate!.day}.${_endDate!.month}.${_endDate!.year}',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
@@ -218,7 +313,11 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
     void Function(String?) onChanged,
   ) {
     return DropdownButtonFormField<String>(
-      decoration: InputDecoration(labelText: label),
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
       items:
           items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
       onChanged: onChanged,

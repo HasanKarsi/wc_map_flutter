@@ -27,54 +27,118 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     var userProvider = Provider.of<UserProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Kullanıcı Bilgileri')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Ad giriş alanı.
-            TextField(
-              controller: _adController,
-              decoration: const InputDecoration(labelText: 'Adınız'),
+      appBar: AppBar(
+        title: const Text('Kullanıcı Bilgileri'),
+        backgroundColor: Colors.blue[700],
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+        ),
+        elevation: 4,
+        centerTitle: true,
+      ),
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFE3F2FD), Color(0xFF90CAF9)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Card(
+            elevation: 8,
+            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
             ),
-            const SizedBox(height: 16),
-            // Konum seçici dropdown.
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(labelText: 'Konum'),
-              items:
-                  konumlar
-                      .map((k) => DropdownMenuItem(value: k, child: Text(k)))
-                      .toList(),
-              onChanged: (val) => setState(() => _selectedKonum = val),
-              value: _selectedKonum,
-            ),
-            const SizedBox(height: 24),
-            // Kaydet ve devam et butonu.
-            ElevatedButton(
-              onPressed: () async {
-                // Alanlar doluysa bilgileri kaydet ve ana ekrana geç.
-                if (_adController.text.isNotEmpty && _selectedKonum != null) {
-                  await userProvider.saveUserInfo(
-                    _adController.text,
-                    _selectedKonum!,
-                  );
-                  if (!mounted) return;
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const HomeScreen()),
-                  );
-                } else {
-                  // Eksik bilgi varsa uyarı göster.
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Lütfen tüm alanları doldurun"),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.person, size: 56, color: Colors.blue[700]),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Hoş geldiniz!",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
-                  );
-                }
-              },
-              child: const Text('Kaydet ve Devam Et'),
+                  ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: _adController,
+                    decoration: InputDecoration(
+                      labelText: 'Adınız',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: const Icon(Icons.person),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: 'Konum',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: const Icon(Icons.place),
+                    ),
+                    items:
+                        konumlar
+                            .map(
+                              (k) => DropdownMenuItem(value: k, child: Text(k)),
+                            )
+                            .toList(),
+                    onChanged: (val) => setState(() => _selectedKonum = val),
+                    value: _selectedKonum,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[700],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      icon: const Icon(Icons.save),
+                      label: const Text('Kaydet ve Devam Et'),
+                      onPressed: () async {
+                        // Alanlar doluysa bilgileri kaydet ve ana ekrana geç.
+                        if (_adController.text.isNotEmpty &&
+                            _selectedKonum != null) {
+                          await userProvider.saveUserInfo(
+                            _adController.text,
+                            _selectedKonum!,
+                          );
+                          if (!mounted) return;
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HomeScreen(),
+                            ),
+                          );
+                        } else {
+                          // Eksik bilgi varsa uyarı göster.
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Lütfen tüm alanları doldurun"),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );
