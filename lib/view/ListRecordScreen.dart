@@ -4,6 +4,9 @@ import 'package:flutter_wc_app/providers/ToiletProvider.dart';
 import 'package:flutter_wc_app/providers/UserProvider.dart';
 import 'package:flutter_wc_app/view/AddRecordScreen.dart';
 import 'package:provider/provider.dart';
+import 'package:excel/excel.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 import '../widgets/RecordListItem.dart';
 
@@ -46,6 +49,7 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
   ];
 
   bool _showAll = false; // Şifre ile tüm kayıtları gösterme durumu
+  bool _showExportButton = false;
 
   @override
   void initState() {
@@ -80,6 +84,14 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
             tooltip: 'Tüm Kayıtları Göster',
             onPressed: _showPasswordDialog,
           ),
+          if (_showExportButton)
+            IconButton(
+              icon: const Icon(Icons.download),
+              tooltip: 'Excel\'e Aktar',
+              onPressed: () async {
+                await _exportToExcel(provider.records);
+              },
+            ),
         ],
       ),
       body: Column(
@@ -264,7 +276,6 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
       // Güncelleme ekranı detaylı şekilde ayrı bir ekranla yapılabilir.
     }
     // Fotoğraf işlemleri AKTIF!
-    
     else if (action == 'photo') {
       showDialog(
         context: context,
@@ -281,7 +292,6 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
             ),
       );
     }
-    
   }
 
   /// Silme işlemi için onay dialog'u.
@@ -334,6 +344,7 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
                     // Şifrenizi buradan değiştirebilirsiniz
                     setState(() {
                       _showAll = true;
+                      _showExportButton = true;
                     });
                     Navigator.pop(context);
                   } else {
@@ -346,6 +357,54 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
               ),
             ],
           ),
+    );
+  }
+
+  /// Kayıtları Excel dosyasına aktaran fonksiyon.
+  Future<void> _exportToExcel(List<ToiletRecord> records) async {
+    var excel = Excel.createExcel();
+    Sheet sheetObject = excel['Kayıtlar'];
+    sheetObject.appendRow([
+      TextCellValue('Kullanıcı'),
+      TextCellValue('Konum'),
+      TextCellValue('Oturma Saati'),
+      TextCellValue('Oturma Süresi'),
+      TextCellValue('Gitme Sebebi'),
+      TextCellValue('Tuvalet Dışkı'),
+      TextCellValue('Bez Dışkı'),
+      TextCellValue('Kıvam'),
+      TextCellValue('Fotoğraf URL'),
+    ]);
+    for (var rec in records) {
+      sheetObject.appendRow([
+        TextCellValue(rec.kullanici ?? ''),
+        TextCellValue(rec.konum ?? ''),
+        TextCellValue(rec.oturmaSaati ?? ''),
+        TextCellValue(rec.oturmaSuresi?.toString() ?? ''),
+        TextCellValue(rec.gitmeSebebi ?? ''),
+        TextCellValue(rec.diskMiktariTuvalet ?? ''),
+        TextCellValue(rec.diskMiktariBez ?? ''),
+        TextCellValue(rec.kivam ?? ''),
+        TextCellValue(rec.fotoUrl ?? ''),
+      ]);
+    }
+
+    // İndirilenler klasörüne kaydet
+    Directory? downloadsDir;
+    try {
+      downloadsDir =
+          await getDownloadsDirectory(); // path_provider 2.0.8+ ile gelir
+    } catch (e) {
+      downloadsDir = await getExternalStorageDirectory(); // Alternatif olarak
+    }
+    String filePath = '${downloadsDir!.path}/kayitlar.xlsx';
+    File(filePath)
+      ..createSync(recursive: true)
+      ..writeAsBytesSync(excel.encode()!);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Excel dosyası kaydedildi: $filePath')),
     );
   }
 }
