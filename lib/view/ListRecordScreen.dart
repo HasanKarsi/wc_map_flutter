@@ -116,7 +116,14 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.blue[700],
         icon: const Icon(Icons.add),
-        label: const Text("Yeni Kayıt"),
+        label: const Text(
+          "Yeni Kayıt",
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         onPressed: () {
           Navigator.push(
             context,

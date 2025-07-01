@@ -82,10 +82,14 @@ class HomeScreen extends StatelessWidget {
                       ),
                       backgroundColor: Colors.blue[700],
                     ),
-                    icon: const Icon(Icons.add, size: 24),
+                    icon: const Icon(Icons.add, size: 24, color: Colors.white),
                     label: const Text(
                       'Yeni Tuvalet Kaydı Ekle',
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     onPressed: () {
                       Navigator.push(
@@ -102,11 +106,16 @@ class HomeScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       side: BorderSide(color: Colors.blue[700]!),
+                      backgroundColor: Colors.blue[700], // Arka planı mavi yap
                     ),
-                    icon: Icon(Icons.list, color: Colors.blue[700]),
-                    label: Text(
+                    icon: const Icon(Icons.list, color: Colors.white),
+                    label: const Text(
                       'Kayıtları Listele',
-                      style: TextStyle(fontSize: 16, color: Colors.blue[700]),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     onPressed: () {
                       Navigator.push(

@@ -294,7 +294,14 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                         }
                       },
                       icon: const Icon(Icons.photo_camera),
-                      label: const Text('Fotoğraf Ekle'),
+                      label: const Text(
+                        'Fotoğraf Ekle',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                     if (_pickedImage != null)
                       Padding(
@@ -376,7 +383,14 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                               ),
                         );
                       },
-                      child: const Text('Kaydet'),
+                      child: const Text(
+                        'Kaydet',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
