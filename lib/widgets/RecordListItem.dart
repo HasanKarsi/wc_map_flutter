@@ -62,18 +62,48 @@ void showRecordDetailDialog(BuildContext context, ToiletRecord record) {
                   // Fotoğraf önizlemesi
                   if (record.fotoUrl != null && record.fotoUrl.isNotEmpty)
                     Center(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          record.fotoUrl,
-                          height: 120,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (context, error, stackTrace) => const Icon(
-                                Icons.broken_image,
-                                size: 60,
-                                color: Colors.grey,
-                              ),
+                      child: GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder:
+                                (_) => Dialog(
+                                  backgroundColor: Colors.transparent,
+                                  child: GestureDetector(
+                                    onTap: () => Navigator.pop(context),
+                                    child: InteractiveViewer(
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.network(
+                                          record.fotoUrl,
+                                          fit: BoxFit.contain,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(
+                                                    Icons.broken_image,
+                                                    size: 120,
+                                                    color: Colors.grey,
+                                                  ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            record.fotoUrl,
+                            height: 120,
+                            fit: BoxFit.cover,
+                            errorBuilder:
+                                (context, error, stackTrace) => const Icon(
+                                  Icons.broken_image,
+                                  size: 60,
+                                  color: Colors.grey,
+                                ),
+                          ),
                         ),
                       ),
                     )

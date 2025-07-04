@@ -26,6 +26,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
   String? _kivam;
   File? _pickedImage;
   final ImagePicker _picker = ImagePicker();
+  bool _isLoading = false; // <-- Yükleniyor durumunu tutan değişken
 
   final List<String> sebepList = [
     'Haber Verdi',
@@ -56,348 +57,444 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
         elevation: 4,
         centerTitle: true,
       ),
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFE3F2FD), Color(0xFF90CAF9)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Center(
-          child: Card(
-            elevation: 8,
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+      body: Stack(
+        children: [
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFE3F2FD), Color(0xFF90CAF9)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.add_circle_outline,
-                      size: 48,
-                      color: Colors.blue[700],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Yeni Kayıt Ekle",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue[700],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Kullanıcı adı ve değiştirme butonu.
-                    Row(
+            child: Center(
+              child: Card(
+                elevation: 8,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 32,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 24,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: Text(
-                            'Kullanıcı: ${userProvider.kullaniciAdi}',
-                            style: const TextStyle(fontWeight: FontWeight.w500),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Yeni Kayıt Ekle",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue[700],
                           ),
                         ),
-                        TextButton(
-                          onPressed: () async {
-                            var yeniAd = await _showEditDialog(
-                              context,
-                              'Kullanıcı Adı',
-                              userProvider.kullaniciAdi ?? '',
-                            );
-                            if (yeniAd != null && yeniAd.isNotEmpty) {
-                              await userProvider.updateKullaniciAdi(yeniAd);
-                            }
-                          },
-                          child: const Text('Değiştir'),
-                        ),
-                      ],
-                    ),
-                    // Konum ve değiştirme butonu.
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Konum: ${userProvider.konum}',
-                            style: const TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            var yeniKonum = await _showKonumDialog(
-                              context,
-                              userProvider.konum ?? '',
-                            );
-                            if (yeniKonum != null) {
-                              await userProvider.updateKonum(yeniKonum);
-                            }
-                          },
-                          child: const Text('Değiştir'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Oturma saati seçici.
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        'Oturulan Saat: ${_formatDateTime(_oturmaSaati)}',
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(
-                          Icons.calendar_today,
-                          color: Colors.blue,
-                        ),
-                        onPressed: () async {
-                          DateTime? selectedDate = await showDatePicker(
-                            context: context,
-                            initialDate: _oturmaSaati,
-                            firstDate: DateTime.now().subtract(
-                              const Duration(days: 180),
-                            ),
-                            lastDate: DateTime.now(),
-                          );
-                          if (selectedDate != null) {
-                            TimeOfDay? selectedTime = await showTimePicker(
-                              context: context,
-                              initialTime: TimeOfDay.fromDateTime(_oturmaSaati),
-                            );
-                            if (selectedTime != null) {
-                              setState(() {
-                                _oturmaSaati = DateTime(
-                                  selectedDate.year,
-                                  selectedDate.month,
-                                  selectedDate.day,
-                                  selectedTime.hour,
-                                  selectedTime.minute,
-                                );
-                              });
-                            }
-                          }
-                        },
-                      ),
-                    ),
-                    // Oturma süresi giriş alanı.
-                    TextField(
-                      controller: _sureController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Tuvalette Oturulan Süre (dk)',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        prefixIcon: const Icon(Icons.timer),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Gitme sebebi seçici.
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Tuvalete Gitme Sebebi',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        prefixIcon: const Icon(Icons.event_note),
-                      ),
-                      items:
-                          sebepList
-                              .map(
-                                (s) =>
-                                    DropdownMenuItem(value: s, child: Text(s)),
-                              )
-                              .toList(),
-                      onChanged: (val) => setState(() => _gitmeSebebi = val),
-                      value: _gitmeSebebi,
-                    ),
-                    const SizedBox(height: 12),
-                    // Tuvalette dışkı miktarı seçici.
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Tuvalette Dışkı Miktarı',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        prefixIcon: const Icon(Icons.wc),
-                      ),
-                      items:
-                          miktarList
-                              .map(
-                                (s) =>
-                                    DropdownMenuItem(value: s, child: Text(s)),
-                              )
-                              .toList(),
-                      onChanged:
-                          (val) => setState(() => _diskMiktariTuvalet = val),
-                      value: _diskMiktariTuvalet,
-                    ),
-                    const SizedBox(height: 12),
-                    // Bezde dışkı miktarı seçici.
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Bezde Dışkı Miktarı',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        prefixIcon: const Icon(Icons.baby_changing_station),
-                      ),
-                      items:
-                          miktarList
-                              .map(
-                                (s) =>
-                                    DropdownMenuItem(value: s, child: Text(s)),
-                              )
-                              .toList(),
-                      onChanged: (val) => setState(() => _diskMiktariBez = val),
-                      value: _diskMiktariBez,
-                    ),
-                    const SizedBox(height: 12),
-                    // Dışkı kıvamı seçici.
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Dışkı Kıvamı',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        prefixIcon: const Icon(Icons.texture),
-                      ),
-                      items:
-                          kivamList
-                              .map(
-                                (s) =>
-                                    DropdownMenuItem(value: s, child: Text(s)),
-                              )
-                              .toList(),
-                      onChanged: (val) => setState(() => _kivam = val),
-                      value: _kivam,
-                    ),
-                    const SizedBox(height: 16),
-                    // Fotoğraf ekleme butonu ve önizlemesi
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[700],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        minimumSize: const Size(double.infinity, 48),
-                      ),
-                      onPressed: () async {
-                        final picked = await _picker.pickImage(
-                          source: ImageSource.camera,
-                        );
-                        if (picked != null) {
-                          setState(() {
-                            _pickedImage = File(picked.path);
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.photo_camera),
-                      label: const Text(
-                        'Fotoğraf Ekle',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    if (_pickedImage != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(_pickedImage!, height: 120),
-                        ),
-                      ),
-                    const SizedBox(height: 24),
-                    // Kaydet butonu
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[700],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        minimumSize: const Size(double.infinity, 48),
-                      ),
-                      onPressed: () async {
-                        if (_gitmeSebebi == null ||
-                            _diskMiktariTuvalet == null ||
-                            _diskMiktariBez == null ||
-                            _kivam == null ||
-                            _pickedImage == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "Tüm alanları doldurun ve fotoğraf ekleyin.",
-                              ),
-                            ),
-                          );
-                          return;
-                        }
-
-                        String fileName = _formatDateTime(_oturmaSaati);
-                        String fotoUrl = await StorageService().uploadPhoto(
-                          _pickedImage!,
-                          "$fileName.jpg",
-                        );
-
-                        ToiletRecord record = ToiletRecord(
-                          kullanici: userProvider.kullaniciAdi ?? '',
-                          konum: userProvider.konum ?? '',
-                          oturmaSaati: _formatDateTime(_oturmaSaati),
-                          oturmaSuresi:
-                              int.tryParse(_sureController.text) ?? 15,
-                          gitmeSebebi: _gitmeSebebi!,
-                          diskMiktariTuvalet: _diskMiktariTuvalet!,
-                          diskMiktariBez: _diskMiktariBez!,
-                          kivam: _kivam!,
-                          fotoUrl: fotoUrl,
-                        );
-
-                        await toiletProvider.addRecord(record);
-
-                        if (!mounted) return;
-                        showDialog(
-                          context: context,
-                          builder:
-                              (_) => AlertDialog(
-                                title: const Text('Kayıt Başarılı'),
-                                content: const Text(
-                                  'Kayıt başarıyla kaydedildi.',
+                        // Kullanıcı adı ve değiştirme butonu.
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Kullanıcı: ${userProvider.kullaniciAdi}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                actions: [
-                                  TextButton(
-                                    onPressed:
-                                        () => Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => HomeScreen(),
-                                          ),
-                                          (route) => false,
-                                        ),
-                                    child: const Text('Tamam'),
-                                  ),
-                                ],
                               ),
-                        );
-                      },
-                      child: const Text(
-                        'Kaydet',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                var yeniAd = await _showEditDialog(
+                                  context,
+                                  'Kullanıcı Adı',
+                                  userProvider.kullaniciAdi ?? '',
+                                );
+                                if (yeniAd != null && yeniAd.isNotEmpty) {
+                                  await userProvider.updateKullaniciAdi(yeniAd);
+                                }
+                              },
+                              child: const Text('Değiştir'),
+                            ),
+                          ],
                         ),
-                      ),
+                        // Konum ve değiştirme butonu.
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Konum: ${userProvider.konum}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                var yeniKonum = await _showKonumDialog(
+                                  context,
+                                  userProvider.konum ?? '',
+                                );
+                                if (yeniKonum != null) {
+                                  await userProvider.updateKonum(yeniKonum);
+                                }
+                              },
+                              child: const Text('Değiştir'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        // Oturma saati seçici.
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey),
+                          ),
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          child: ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              '   Tuvalette Oturulan Saat: \n    ${_formatDateTime(_oturmaSaati)}',
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(
+                                Icons.calendar_today,
+                                color: Colors.blue,
+                              ),
+                              onPressed: () async {
+                                DateTime? selectedDate = await showDatePicker(
+                                  context: context,
+                                  initialDate: _oturmaSaati,
+                                  firstDate: DateTime.now().subtract(
+                                    const Duration(days: 180),
+                                  ),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (selectedDate != null) {
+                                  TimeOfDay? selectedTime =
+                                      await showTimePicker(
+                                        context: context,
+                                        initialTime: TimeOfDay.fromDateTime(
+                                          _oturmaSaati,
+                                        ),
+                                      );
+                                  if (selectedTime != null) {
+                                    setState(() {
+                                      _oturmaSaati = DateTime(
+                                        selectedDate.year,
+                                        selectedDate.month,
+                                        selectedDate.day,
+                                        selectedTime.hour,
+                                        selectedTime.minute,
+                                      );
+                                    });
+                                  }
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Oturma süresi giriş alanı.
+                        TextField(
+                          controller: _sureController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Tuvalette Oturulan Süre (dk)',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.timer),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Gitme sebebi seçici.
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Tuvalete Gitme Sebebi',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.event_note),
+                          ),
+                          items:
+                              sebepList
+                                  .map(
+                                    (s) => DropdownMenuItem(
+                                      value: s,
+                                      child: Text(s),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged:
+                              (val) => setState(() => _gitmeSebebi = val),
+                          value: _gitmeSebebi,
+                        ),
+                        const SizedBox(height: 12),
+                        // Tuvalette dışkı miktarı seçici.
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Tuvalette Dışkı Miktarı',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.wc),
+                          ),
+                          items:
+                              miktarList
+                                  .map(
+                                    (s) => DropdownMenuItem(
+                                      value: s,
+                                      child: Text(s),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged:
+                              (val) =>
+                                  setState(() => _diskMiktariTuvalet = val),
+                          value: _diskMiktariTuvalet,
+                        ),
+                        const SizedBox(height: 12),
+                        // Bezde dışkı miktarı seçici.
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Bezde Dışkı Miktarı',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.baby_changing_station),
+                          ),
+                          items:
+                              miktarList
+                                  .map(
+                                    (s) => DropdownMenuItem(
+                                      value: s,
+                                      child: Text(s),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged:
+                              (val) => setState(() => _diskMiktariBez = val),
+                          value: _diskMiktariBez,
+                        ),
+                        const SizedBox(height: 12),
+                        // Dışkı kıvamı seçici.
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Dışkı Kıvamı',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.texture),
+                          ),
+                          items:
+                              kivamList
+                                  .map(
+                                    (s) => DropdownMenuItem(
+                                      value: s,
+                                      child: Text(s),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (val) => setState(() => _kivam = val),
+                          value: _kivam,
+                        ),
+                        const SizedBox(height: 16),
+                        // Fotoğraf ekleme butonu ve önizlemesi
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[700],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            minimumSize: const Size(double.infinity, 48),
+                          ),
+                          onPressed: () async {
+                            showModalBottomSheet(
+                              context: context,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(16),
+                                ),
+                              ),
+                              builder:
+                                  (_) => SafeArea(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        ListTile(
+                                          leading: const Icon(Icons.camera_alt),
+                                          title: const Text(
+                                            'Kamera ile Fotoğraf Çek',
+                                          ),
+                                          onTap: () async {
+                                            Navigator.pop(context);
+                                            final picked = await _picker
+                                                .pickImage(
+                                                  source: ImageSource.camera,
+                                                );
+                                            if (picked != null) {
+                                              setState(() {
+                                                _pickedImage = File(
+                                                  picked.path,
+                                                );
+                                              });
+                                            }
+                                          },
+                                        ),
+                                        ListTile(
+                                          leading: const Icon(
+                                            Icons.photo_library,
+                                          ),
+                                          title: const Text(
+                                            'Galeriden Fotoğraf Seç',
+                                          ),
+                                          onTap: () async {
+                                            Navigator.pop(context);
+                                            final picked = await _picker
+                                                .pickImage(
+                                                  source: ImageSource.gallery,
+                                                );
+                                            if (picked != null) {
+                                              setState(() {
+                                                _pickedImage = File(
+                                                  picked.path,
+                                                );
+                                              });
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                            );
+                          },
+                          icon: const Icon(Icons.photo_camera),
+                          label: const Text(
+                            'Fotoğraf Ekle',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        if (_pickedImage != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(_pickedImage!, height: 120),
+                            ),
+                          ),
+                        const SizedBox(height: 24),
+                        // Kaydet butonu
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[700],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            minimumSize: const Size(double.infinity, 48),
+                          ),
+                          onPressed: () async {
+                            setState(
+                              () => _isLoading = true,
+                            ); // <-- Yükleniyor başlat
+                            if (_gitmeSebebi == null ||
+                                _diskMiktariTuvalet == null ||
+                                _diskMiktariBez == null ||
+                                _kivam == null ||
+                                _pickedImage == null) {
+                              setState(
+                                () => _isLoading = false,
+                              ); // <-- Hata olursa durdur
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Tüm alanları doldurun ve fotoğraf ekleyin.",
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            String fileName = _formatDateTime(_oturmaSaati);
+                            String fotoUrl = await StorageService().uploadPhoto(
+                              _pickedImage!,
+                              "$fileName.jpg",
+                            );
+
+                            ToiletRecord record = ToiletRecord(
+                              kullanici: userProvider.kullaniciAdi ?? '',
+                              konum: userProvider.konum ?? '',
+                              oturmaSaati: _formatDateTime(_oturmaSaati),
+                              oturmaSuresi:
+                                  int.tryParse(_sureController.text) ?? 15,
+                              gitmeSebebi: _gitmeSebebi!,
+                              diskMiktariTuvalet: _diskMiktariTuvalet!,
+                              diskMiktariBez: _diskMiktariBez!,
+                              kivam: _kivam!,
+                              fotoUrl: fotoUrl,
+                            );
+
+                            await toiletProvider.addRecord(record);
+
+                            setState(
+                              () => _isLoading = false,
+                            ); // <-- Yükleniyor durdur
+
+                            if (!mounted) return;
+                            showDialog(
+                              context: context,
+                              builder:
+                                  (_) => AlertDialog(
+                                    title: const Text('Kayıt Başarılı'),
+                                    content: const Text(
+                                      'Kayıt başarıyla kaydedildi.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.pushAndRemoveUntil(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => HomeScreen(),
+                                              ),
+                                              (route) => false,
+                                            ),
+                                        child: const Text('Tamam'),
+                                      ),
+                                    ],
+                                  ),
+                            );
+                          },
+                          child: const Text(
+                            'Kaydet',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+        ],
       ),
     );
   }

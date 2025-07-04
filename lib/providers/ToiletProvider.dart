@@ -14,10 +14,16 @@ class ToiletProvider extends ChangeNotifier {
   // Firestore işlemleri için servis.
   final FirestoreService _firestoreService = FirestoreService();
 
+  bool isLoading = false;
+
   /// Firestore'dan tüm kayıtları çeker ve dinleyicilere bildirir.
   Future<void> fetchRecords() async {
+    isLoading = true;
+    notifyListeners();
     _records = await _firestoreService.getAllRecords();
-    notifyListeners(); // Kayıtlar güncellendiğinde dinleyicilere haber ver.
+    // Kayıtlar güncellendiğinde dinleyicilere haber ver.
+    isLoading = false;
+    notifyListeners();
   }
 
   /// Yeni bir tuvalet kaydı ekler ve kayıt listesini günceller.

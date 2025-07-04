@@ -159,26 +159,40 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
             // Kayıtların listesi.
             Expanded(
               child:
-                  records.isEmpty
+                  provider
+                          .isLoading // <-- ToiletProvider'da isLoading değişkeni olmalı
+                      ? const Center(child: CircularProgressIndicator())
+                      : records.isEmpty
                       ? const Center(
                         child: Text(
                           'Kayıt bulunmamaktadır.',
                           style: TextStyle(fontSize: 18, color: Colors.grey),
                         ),
                       )
-                      : ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
-                        ),
-                        itemCount: records.length,
-                        itemBuilder: (context, index) {
-                          var rec = records[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: RecordListItem(record: rec),
-                          );
+                      : RefreshIndicator(
+                        onRefresh: () async {
+                          await Provider.of<ToiletProvider>(
+                            context,
+                            listen: false,
+                          ).fetchRecords();
+                          setState(() {}); // Yenileme sonrası arayüzü güncelle
                         },
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
+                          ),
+                          itemCount: records.length,
+                          itemBuilder: (context, index) {
+                            var rec = records[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 4.0,
+                              ),
+                              child: RecordListItem(record: rec),
+                            );
+                          },
+                        ),
                       ),
             ),
           ],
@@ -460,7 +474,7 @@ class _ListRecordsScreenState extends State<ListRecordsScreen> {
               ),
               TextButton(
                 onPressed: () {
-                  if (password == '859021') {
+                  if (password == '2021') {
                     // Şifrenizi buradan değiştirebilirsiniz
                     setState(() {
                       _showAll = true;
