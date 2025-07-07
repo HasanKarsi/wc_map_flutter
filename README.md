@@ -48,6 +48,26 @@ cd tuvalet-takip</code></pre>
 
 <hr />
 
+<h2>⚠️ Önemli: Firebase Dosyalarını Ekleyin</h2>
+<p>Bu projede güvenlik nedeniyle aşağıdaki dosyalar repoda yer almamaktadır:</p>
+<ul>
+  <li><code>lib/firebase_options.dart</code></li>
+  <li><code>android/app/google-services.json</code></li>
+  <li><code>ios/Runner/GoogleService-Info.plist</code></li>
+</ul>
+<p>Projeyi çalıştırmak için:</p>
+<ol>
+  <li>Kendi Firebase projenizi oluşturun.</li>
+  <li>Android ve iOS için gerekli yapılandırma dosyalarını Firebase Console’dan indirin.</li>
+  <li>Terminalde aşağıdaki komutu çalıştırarak <code>firebase_options.dart</code> dosyasını oluşturun:
+    <pre><code>flutterfire configure</code></pre>
+  </li>
+  <li>İlgili dosyaları yukarıda belirtilen yerlere ekleyin.</li>
+</ol>
+<p>Daha fazla bilgi için <a href="https://firebase.flutter.dev/docs/overview/" target="_blank">FlutterFire Dokümantasyonu</a>’na bakabilirsiniz.</p>
+
+<hr />
+
 <h2>Proje Mimarisi</h2>
 <ul>
   <li><code>lib/models/</code> — Veri modelleri (örn. <code>ToiletRecord</code>, <code>User</code>)</li>
